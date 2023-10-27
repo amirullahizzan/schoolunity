@@ -8,7 +8,8 @@ public class Enemy : MonoBehaviour
     NavMeshAgent navmesh;
     public Transform chasepointT;
     public Transform playerT;
-    
+    public Score score;
+    public GameObject deadZombunnyPrefab;
     public int life = 3;
     AudioSource se;
 
@@ -18,6 +19,8 @@ public class Enemy : MonoBehaviour
     {
         navmesh = GetComponent<NavMeshAgent>();
         se = GetComponent<AudioSource>();
+        //score = GameObject.Find("Score").GetComponent<Score>();
+
         //playerT = GameObject.Find("Player").GetComponent<Transform>();
         //playerT = GameObject.FindGameObjectWithTag("Player").GetComponent<Transform>();
         if(!playerT)
@@ -43,8 +46,6 @@ public class Enemy : MonoBehaviour
             chasepointT = playerT;
         }
 
-        
-
         //if (Input.GetButtonDown("Fire1"))
         //{
         //TakeDamage();
@@ -57,7 +58,12 @@ public class Enemy : MonoBehaviour
         se.Play();
         if(life <= 0)
         {
+            score = GameObject.Find("Score").GetComponent<Score>();
+            //GameObject scoreObj = GameObject.FindGameObjectWithTag("Score");
             Destroy(gameObject);
+            score.AddScore(10);
+            Destroy(Instantiate(deadZombunnyPrefab, transform.position, transform.rotation),5);
+            
         }
     }
 
@@ -68,6 +74,7 @@ public class Enemy : MonoBehaviour
         {
             //Player playerScript = other.GetComponent<Player>();
             playerScript.TakeDamage();
+            //score.AddScore(1);
         }
     }
 }
