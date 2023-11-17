@@ -7,7 +7,7 @@ public class Spawner : MonoBehaviour
     // Start is called before the first frame update
     public GameObject zombunnyPrefab;
 
-    float timer = 3;
+    float timer = 1;
     void Start()
     {
         
@@ -22,7 +22,7 @@ public class Spawner : MonoBehaviour
     private void SpawnerTick()
     {
         timer += Time.deltaTime;
-        if (timer >= 3)
+        if (timer >= 1)
         {
         float randomVector_x = Random.Range(0f,10f);
         float randomVector_z = Random.Range(0f,10f);

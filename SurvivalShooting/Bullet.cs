@@ -26,7 +26,7 @@ public class Bullet : MonoBehaviour
             //if(enemyScript != null)
             if (enemyScript)
             {
-                print("Hit!");
+                //print("Hit!");
                 enemyScript.TakeDamage();
             }
         }

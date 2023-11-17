@@ -62,7 +62,7 @@ public class Enemy : MonoBehaviour
             //GameObject scoreObj = GameObject.FindGameObjectWithTag("Score");
             Destroy(gameObject);
             score.AddScore(10);
-            Destroy(Instantiate(deadZombunnyPrefab, transform.position, transform.rotation),5);
+            Destroy(Instantiate(deadZombunnyPrefab, transform.position, transform.rotation),6);
             
         }
     }
