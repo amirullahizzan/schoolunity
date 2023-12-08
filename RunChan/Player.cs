@@ -23,6 +23,8 @@ public class Player : MonoBehaviour
         Control();
     }
     float groundCount = 0;
+    float moveSpeed = 5f;
+    float base_moveSpeed = 5f;
     void Control()
     {
         //Vector2 vectorspeed = new Vector2(4f,0);
@@ -33,10 +35,19 @@ public class Player : MonoBehaviour
         //    rb.velocity += new Vector2(rb.velocity.x, jumpPower);
         //}
         Vector2 v = rb.velocity;
-        float moveSpeed = 5f;
         float jumpPower = 18f;
+        
+        if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
+        {
+            Debug.Log("sprint keypressed");
+            moveSpeed = 10f;
+        }
+        else
+        {
+           moveSpeed = base_moveSpeed;
+        }
 
-        if(groundCount > 0)
+        if (groundCount > 0)
         {
             isGround = true;
         }
@@ -61,7 +72,7 @@ public class Player : MonoBehaviour
             v.y = jumpPower;
             isGround = false;
         }
-
+       
 
 
         if(rb.velocity.x < 0)
