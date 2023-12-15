@@ -1,188 +1,161 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Cinemachine;
 
 public class Player : MonoBehaviour
 {
 
-    Rigidbody rb;
-    public GameObject bulletPrefab;
-    public Transform gunPosition;
-    public Transform gunPositionleft;
-    public Transform gunPositionright;
-    public LayerMask mask;
-    public GameObject gameoverObject;
+    Rigidbody2D rb;
+    SpriteRenderer spriterenderer;
     Animator animator;
-    //public Vector3 gunVector3;
-    float base_speed = 3f;
-    float speed = 3f;
-    bool isAlive = true;
+    bool isGround = false;
     // Start is called before the first frame update
-
-    AudioSource se;
-
-    public GameObject[] heartObjects;
-
-    const int MAX_HEART = 3;
-    public int life = MAX_HEART;
-    float hitcooldown = 0;
-
     void Start()
     {
-        rb = GetComponent<Rigidbody>();    
+        rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
-        se = GetComponent<AudioSource>();
-        //cameraTransform = GameObject.Find("").GetComponent<Camera>()
+        spriterenderer = GetComponent<SpriteRenderer>();
     }
-
-    public void TakeDamage()
-    {
-        if (!isAlive)
-        {
-            return;
-        }
-
-        if (hitcooldown <= 0)
-        {
-            se.Play();
-            hitcooldown = 3;
-            life--;
-            for (int i = 0; i < heartObjects.Length; i++)
-            {
-                //if (i < life)
-                //{
-                //    heartObjects[i].SetActive(true);
-                //}
-                //else
-                //{
-                //    heartObjects[i].SetActive(false);
-                //}
-                heartObjects[i].SetActive(i<life);
-            }
-        }
-        if (life <= 0) 
-            { 
-            isAlive = false;
-            animator.SetBool("IsAlive", !isAlive);
-            GetComponent<Collider>().enabled = false ;
-             rb.velocity = new Vector3(0,0,0);
-            gameoverObject.SetActive(true);
-            }
-
-
-    }
-    float shoottimer = 0f;
 
     // Update is called once per frame
+
+    void BlinkSprite()
+    {
+        if (damageframe % 3 == 0)
+        {
+            spriterenderer.enabled = !spriterenderer.enabled;
+        }
+    }
     void Update()
     {
-
-        if(!isAlive)
+        stunTimer -= Time.deltaTime;
+        if (stunTimer <= 0)
         {
-            return;
-        }   
-        Move();
-        Fire();
-        Aim();
-        animator.SetFloat("Speed", rb.velocity.magnitude);
-        hitcooldown -= Time.deltaTime;
+            Control();
+            damageframe++;
+            stunTimer = 0;
+            animator.SetBool("damage", false);
+            damageframe = 0;
+            spriterenderer.enabled = true;
+        }
+        else
+        {
+            BlinkSprite();
+        }
     }
-
-
-    private void Aim()
+    float groundCount = 0;
+    float moveSpeed = 5f;
+    float base_moveSpeed = 5f;
+    void Control()
     {
-        //print(Input.mousePosition);
-
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        RaycastHit hit;
-
-            if(Physics.Raycast(ray,out hit,100f, mask))
+        //Vector2 vectorspeed = new Vector2(4f,0);
+        //rb.velocity = new Vector2(Input.GetAxis("Horizontal")*moveSpeed,rb.velocity.y);
+        ////if(   Input.GetButtonDown("Jump") );
+        //if (Input.GetKeyDown(KeyCode.Space))
+        //{
+        //    rb.velocity += new Vector2(rb.velocity.x, jumpPower);
+        //}
+        Vector2 v = rb.velocity;
+        float jumpPower = 18f;
+        
+        if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
         {
-            //hit.point;
-
-            //print(hit.transform.name);
-            transform.LookAt(new Vector3(hit.point.x,0, hit.point.z));
-
+            Debug.Log("sprint keypressed");
+            moveSpeed = 10f;
         }
-    }
+        else
+        {
+           moveSpeed = base_moveSpeed;
+        }
 
-    float dodge_dur = 3f;
-    const float base_dodge_cooldown = 5;
-    float dodge_cooldown = base_dodge_cooldown;
-    void Move()
+        if (groundCount > 0)
+        {
+            isGround = true;
+        }
+        else
+        {
+            isGround = false;
+        }
+
+        v.x = Input.GetAxis("Horizontal") * moveSpeed;
+        if(Input.GetAxis("Horizontal") > 0.5f)
+        {
+        }
+
+
+        animator.SetFloat("move", Mathf.Abs(rb.velocity.magnitude));
+        animator.SetBool("isground", isGround );
+
+   
+        if(Input.GetButtonDown("Jump") && isGround)
+        {
+           
+            v.y = jumpPower;
+            isGround = false;
+        }
+       
+
+
+        if(rb.velocity.x < 0)
+        {
+            spriterenderer.flipX = true;
+            //gameObject.transform.rotation = new Vector3(transform.rotation.x,180, transform.rotation.z);
+        }
+        else if(rb.velocity.x > 0)
+        {
+            spriterenderer.flipX = false;
+            //gameObject.transform.Rotate(transform.rotation.x, 0, transform.rotation.z);
+        }
+
+        rb.velocity = v;
+
+     
+    }
+    int hp = 3;
+
+    float stunTimer;
+    public void Damage()
     {
-    const float DODGEMULT = 8;
+        hp -= 1;
+        stunTimer = 1.0f;
 
-        Vector3 direction = new Vector3 (Input.GetAxis("Horizontal"),0 , Input.GetAxis("Vertical"));
-        //var position = transform.localPosition;
-        //position.x += (Input.GetAxis("Horizontal"));
-        //position.z += (Input.GetAxis("Vertical"));
+        Debug.Log("damage is triggered");
 
-        rb.velocity = direction * speed;
-        dodge_dur-=Time.deltaTime;
-        dodge_cooldown-=Time.deltaTime;
-        if (Input.GetKeyDown(KeyCode.LeftShift) && dodge_cooldown <= 0)
+        if(spriterenderer.flipX)
         {
-            speed = DODGEMULT;
-            Debug.Log("pressed");
-            dodge_dur = 0.3f;
+            rb.velocity = new Vector2(-5f, 5f);
         }
-        if(dodge_dur < 0)
+        else
         {
-            speed = base_speed;
+            rb.velocity = new Vector2(-5f,5f);
         }
 
+        animator.SetBool("damage", true);
 
-
+       
     }
+        int damageframe = 0;
 
-    float shoottimershotgun = 0.0f;
+    //private void OnCollisionEnter2D(Collision2D collision)
+    //{
+    //    //isGround = true;
+    //    groundCount++;
+    //}
+    //private void OnCollisionExit2D(Collision2D collision)
+    //{
+    //    //isGround = false;
+    //    groundCount--;
+    //}
 
-    const float base_ulti_cooldown = 5.0f;
-    float ulti_cooldown = base_ulti_cooldown;
-
-    void Fire()
+    private void OnTriggerEnter2D(Collider2D collision)
     {
-        shoottimer += Time.deltaTime;
-
-        //Input.GetButtonDown("Fire1");
-        if (Input.GetButton("Fire1") && shoottimer >= 0.4f)
-        {
-            //Destroy(Instantiate(bulletPrefab, gunPosition.position, transform.rotation),0.2f);
-            Destroy(Instantiate(bulletPrefab, gunPosition.position, transform.rotation),0.2f);
-            shoottimer = 0;
-
-        }
-        shoottimershotgun+=Time.deltaTime;
-        if (Input.GetButton("Fire2") && shoottimershotgun >= 0.6f)
-        {
-            //(Instantiate(bulletPrefab, gunPosition.position, transform.rotation),0.2f);
-            Destroy(Instantiate(bulletPrefab, gunPosition.position, transform.rotation),0.2f);
-            Destroy(Instantiate(bulletPrefab, gunPositionleft.position, gunPositionleft.rotation),0.2f);
-            Destroy(Instantiate(bulletPrefab, gunPositionright.position, gunPositionright.rotation), 0.2f);
-            shoottimershotgun = -1;
-        }
-
-        ulti_cooldown+=Time.deltaTime;
-        if (Input.GetKeyDown(KeyCode.Space) && ulti_cooldown >= base_ulti_cooldown)
-        {
-            for(int i = 0; i < 36; i++)
-            {
-                Quaternion newrotation = Quaternion.Euler(0,10*i,0);
-
-                Quaternion rotatedQuaternion = newrotation * transform.rotation;
-
-                Destroy(Instantiate(bulletPrefab, gunPosition.position, rotatedQuaternion),1.0f);
-            }
-            ulti_cooldown = 0;
-        }
+        //isGround = true;
+        groundCount++;
     }
 
-    public float GetUltiCooldown()
+    private void OnTriggerExit2D(Collider2D collision)
     {
-        return ulti_cooldown;
+        //isGround = false;
+        groundCount--;
     }
-
 }
