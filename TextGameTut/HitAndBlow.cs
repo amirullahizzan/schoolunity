@@ -7,7 +7,7 @@ public class HitAndBlow : MonoBehaviour
     // Start is called before the first frame update
 
     public int correctanswer = 1234;
-    public int _input = 9999;
+    //public int _input = 9999;
     //    int wrong_count = 0;
 
     void Start()
@@ -15,18 +15,22 @@ public class HitAndBlow : MonoBehaviour
         //correctanswer = GenerateNumberCard();
         correctanswer = GenerateNumberCard2();
         print( correctanswer );
-        print( FeedBack(_input) );
+        //print( FeedBack(_input) );
        // print("HIT " +   CountHit(correctanswer_arr, input_arr) + " です");
        // print("WRONG " + CountBlow(correctanswer_arr, input_arr) + " です");
       
     }
+
 
     // Update is called once per frame
     void Update()
     {
      
     }
-
+    public int GetCorrectAnswer()
+    {
+        return correctanswer;
+    }
     int GenerateNumberCard()
     {
         int[]n = { 0,1,2,3,4,5,6,7,8,9};
@@ -96,11 +100,11 @@ public class HitAndBlow : MonoBehaviour
 
     //}
 
-    int CountHit(in int input)
+    int CountHit(in int guess)
     {
         int correct_count = 0;
         int[] correctanswer_arr = SplitToDigits(correctanswer);
-        int[] input_arr = SplitToDigits(_input);
+        int[] input_arr = SplitToDigits(guess);
 
         for (int i = 0; i < 4;i++)
         {
@@ -123,7 +127,7 @@ public class HitAndBlow : MonoBehaviour
     {
         int wrong_count = 0;
         int[] correctanswer_arr = SplitToDigits(correctanswer);
-        int[] input_arr = SplitToDigits(_input);
+        int[] input_arr = SplitToDigits(guess);
 
         //int[] correctanswer_arr = SplitToDigits(correctanswer);
         //int[] input_arr = SplitToDigits(input);
@@ -154,17 +158,31 @@ public class HitAndBlow : MonoBehaviour
         return digits_arr;
     }
 
-    string FeedBack(in int guess)
+    //string FeedBack(in int guess)
+    //{
+    //    int[] correctanswer_arr = SplitToDigits(correctanswer);
+    //    int[] input_arr = SplitToDigits(guess);
+    //    int hit =  CountHit(guess);
+    //    int blow = CountBlow(guess);
+    //    if(hit  == 4)
+    //    {
+    //        return "正解です！";
+    //    }
+
+    //}
+
+    public string CheckGuess(in int guess)
     {
         int[] correctanswer_arr = SplitToDigits(correctanswer);
         int[] input_arr = SplitToDigits(guess);
-        int hit =  CountHit(guess);
+        int hit = CountHit(guess);
         int blow = CountBlow(guess);
-        if(hit  == 4)
+        print("INPUT : " + guess);
+        if (hit == 4)
         {
-            return "正解です！";
+            return "正解だ！　俺の負け";
         }
 
-        return guess.ToString() + " は HIT " + hit + " です" + "WRONG " + blow + " です";
+        return guess.ToString() + " は HIT " + hit + " です" + "WRONG " + blow + " だ" + " MUDA MUDA MUDA MUDA";
     }
 }
