@@ -8,7 +8,9 @@ public class DisplayInfo : MonoBehaviour
     public Text sleepylevelText;
     public Text timerText;
     public GameManager gamemanager;
-    // Start is called before the first frame update
+    
+    public GameObject ingameuiGO;
+    public GameObject mainmenuGO;
     private void Awake()
     {
     }
@@ -16,7 +18,21 @@ public class DisplayInfo : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        sleepylevelText.text = "Sleepy Level : " + gamemanager.GetSleepyLevel().ToString();
-        timerText.text = gamemanager.currentTime.ToString(); //only displayed when not sleeping
+        if (!gamemanager.isGameStart && gamemanager.isIntroStart)
+        {
+            mainmenuGO.SetActive(false);
+
+            return;
+        }
+
+        if (gamemanager.isGameStart)
+        {
+            if (!ingameuiGO.gameObject.activeSelf)
+            { ingameuiGO.SetActive(true); }
+            sleepylevelText.text = "Sleepy Level : " + gamemanager.GetSleepyLevel().ToString() + " / "+ GameManager.MAX_SLEEPY_LEVEL;
+            timerText.text = "0" + gamemanager.currentTime.ToString() + ":00"; //only displayed when not sleeping
+        }
+
     }
+
 }

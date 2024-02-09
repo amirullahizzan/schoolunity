@@ -5,18 +5,16 @@ using UnityEngine;
 public class PlayerControl : MonoBehaviour
 {
     public GameObject Camera;
-    public GameObject FadeBox;
+    public GameObject fadeBoxGO;
     CameraEventTrigger cameraEventTrigger;
     //public GameObject GameManagerGO;
     public GameManager gamemanager;
     public DisplayInfo displayinfo;
-    Animator cameraAnimator;
-    Animator fadeboxAnimator;
+    public Animator cameraAnimator;
 
     void Awake()
     {
-        cameraAnimator  = Camera.GetComponent<Animator>();
-        fadeboxAnimator = FadeBox.GetComponent<Animator>();
+        cameraAnimator = Camera.GetComponent<Animator>();
         cameraEventTrigger = Camera.GetComponent<CameraEventTrigger>();
     }
 
@@ -30,49 +28,88 @@ public class PlayerControl : MonoBehaviour
         //Debug.Log("Press to open eyes");
         //Debug.Log("Survive until 5 AM");
         //Debug.Log("you fell asleep because you are too tired...");
-        //Debug.Log("Spam buttons to stop hallucinating!");
+
+        //Debug.Log("You are locked!. Spam buttons to stare the demon down!"); //gives lock and slight hint sound
     }
     // Update is called once per frame
+
     void Update()
     {
-        { cameraAnimator.SetBool("isSleeping", isSleeping); }
-        { fadeboxAnimator.SetBool("isSleeping", isSleeping); }
-        
+        //TODO add rustling sounds
+
         if (Input.anyKey)
         {
-        isKeyPressed = true;
-        
+            isKeyPressed = true;
         }
         else
         {
-        isKeyPressed = false;
+            isKeyPressed = false;
         }
 
+        if (!gamemanager.isGameStart)
+        {
+            if (isKeyPressed && !gamemanager.isIntroStart)
+            {
+                gamemanager.isIntroStart = true;
+                { cameraAnimator.SetBool("isIntroStart", gamemanager.isIntroStart); }
+            }
+            //Set isGameStart = true on animation;
+            return;
+        }
+
+        cameraAnimator.SetBool("isSleeping", isSleeping);
+        if (fadeBoxGO)
+        {
+            Animator fadeboxAnimator = fadeBoxGO.GetComponent<Animator>();
+            fadeboxAnimator.SetBool("isSleeping", isSleeping);
+        }
         UpdatePlayerState();
     }
 
- 
+
+    float LOOK_KILL_DURATION = 3.0f;
+    float lookTimer = 3.0f;
     void UpdatePlayerState()
     {
-        if(isKeyPressed)
+        if (isKeyPressed)
         {
-            Debug.Log("player is AWAKE");
             isSleeping = false;
             // hold all attacks?. no
-
         }
-        else if(!isKeyPressed && cameraEventTrigger.isFullyFacingRoom)
+        else if (!isKeyPressed && cameraEventTrigger.isFullyFacingRoom)
         {
-            Debug.Log("player is ZZZZ");
             isSleeping = true;
+        }
+
+        if (cameraEventTrigger.isFullyFacingRoom && gamemanager.isGameStart)
+        {
+            displayinfo.timerText.enabled = true;
+            LookToKillEnemy();
+        }
+        else
+        {
             displayinfo.timerText.enabled = false;
         }
 
-        if (cameraEventTrigger.isFullyFacingRoom)
-        {
-            if (gamemanager.isAttacking) { return;}
-             gamemanager.DeleteAllEnemy();
-        }
+    }
 
+    private void LookToKillEnemy()
+    {
+        if (gamemanager.IsEnemyPeeking())
+        {
+            if (lookTimer > 0)
+            {
+                if (isSleeping)
+                {
+                    lookTimer = LOOK_KILL_DURATION;
+                }
+                lookTimer -= Time.deltaTime;
+            }
+            else if (lookTimer <= 0)
+            {
+                gamemanager.SetNoPeeker();
+                lookTimer = LOOK_KILL_DURATION;
+            }
+        }
     }
 }
